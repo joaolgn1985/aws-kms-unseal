@@ -1,7 +1,6 @@
 .terraform.lock.hcl
 .terraform/
 AWSCLIV2.pkg
-history/
 terraform.tfvars
 private.key
 terraform.tfstate
