@@ -1,8 +1,9 @@
 .terraform.lock.hcl
-.terraform/
+.terraform/*
 AWSCLIV2.pkg
-history/
+history/*
 terraform.tfvars
 private.key
 terraform.tfstate
 terraform.tfstate.backup
+.idea/*

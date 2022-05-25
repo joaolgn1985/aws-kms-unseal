@@ -88,6 +88,14 @@ resource "aws_security_group" "vault" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Vault Client Traffic
+  ingress {
+    from_port = 8201
+    to_port = 8201
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port = 0
     to_port = 0
@@ -109,7 +117,7 @@ resource "aws_instance" "consul" {
 
   associate_public_ip_address = true
   ebs_optimized               = false
-  iam_instance_profile        = aws_iam_instance_profile.consul-kms-unseal.id
+  iam_instance_profile        = aws_iam_instance_profile.vault-kms-unseal.id
 
   tags = {
     Name = "consul-kms-unseal-${random_pet.env.id}"
@@ -153,6 +161,14 @@ resource "aws_security_group" "consul" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Consul Client Traffic
+  ingress {
+    from_port = 8501
+    to_port = 8501
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port = 0
     to_port = 0
@@ -175,13 +191,5 @@ output "connections" {
 Connect to Vault via SSH   ssh ubuntu@${aws_instance.vault[0].public_ip} -i private.key
 Vault web interface  http://${aws_instance.vault[0].public_ip}:8200/ui
 VAULT
-
-}
-
-output "connections" {
-  value = <<CONSUL
-Connect to Consul via SSH   ssh ubuntu@${aws_instance.consul[0].public_ip} -i private.key
-Consul web interface  http://${aws_instance.vault[0].public_ip}:8500/ui
-CONSUL
 
 }

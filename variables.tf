@@ -19,3 +19,19 @@ variable "vpc_cidr" {
 variable "consul_url" {
   default = "https://releases.hashicorp.com/consul/1.12.0/consul_1.12.0_linux_amd64.zip"
 }
+
+variable "consul_server1" {
+  default = aws_instance.consul[0].public_ip
+}
+
+variable "consul_server2" {
+  default = aws_instance.consul[1].public_ip
+}
+
+variable "consul_server3" {
+  default = aws_instance.consul[2].public_ip
+}
+
+variable "vault_server" {
+  default = aws_instance.vault[0].private_ip
+}

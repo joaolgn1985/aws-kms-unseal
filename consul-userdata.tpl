@@ -66,6 +66,8 @@ logger "User setup complete"
 
 CONSUL_ZIP="consul.zip"
 CONSUL_URL="${consul_url}"
+CONSUL_SERVER="${consul_server}"
+
 curl --silent --output /tmp/$${CONSUL_ZIP} $${CONSUL_URL}
 unzip -o /tmp/$${CONSUL_ZIP} -d /usr/local/bin/
 chmod 0755 /usr/local/bin/consul
@@ -89,24 +91,23 @@ ExecReload=/bin/kill -HUP $MAINPID
 KillSignal=SIGTERM
 User=consul
 Group=consul
+Restart=on-failure
+RestartSec=42s
 [Install]
 WantedBy=multi-user.target
 EOF
 
 
-cat << EOF > /etc/consul.d/consul.hcl
-storage "file" {
-  path = "/opt/consul"
-}
-listener "tcp" {
-  address     = "0.0.0.0:8200"
-  tls_disable = 1
-}
-seal "awskms" {
-  region     = "${aws_region}"
-  kms_key_id = "${kms_key}"
-}
-ui=true
+cat << EOF > /etc/consul.d/consul.json
+"server": false,
+"node_name": "vault-server",
+"datacenter": "dc1",
+"data_dir": "/var/lib/consul/data",
+"bind_addr": "${vault_server}",
+"client_addr": "127.0.0.1",
+"retry_join": ["${consul_server1}","${consul_server2}", "${consul_server3}"],
+"log_level": "DEBUG",
+"enable_syslog": true
 EOF
 
 
