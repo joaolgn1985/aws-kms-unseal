@@ -15,7 +15,3 @@ variable "vpc_cidr" {
   description = "CIDR of the VPC"
   default     = "192.168.100.0/24"
 }
-
-variable "consul_url" {
-  default = "https://releases.hashicorp.com/consul/1.12.0/consul_1.12.0_linux_amd64.zip"
-}

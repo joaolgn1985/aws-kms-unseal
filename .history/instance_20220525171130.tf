@@ -7,15 +7,6 @@ resource "aws_kms_key" "vault" {
   }
 }
 
-resource "aws_kms_key" "consul" {
-  description             = "Consul unseal key"
-  deletion_window_in_days = 10
-
-  tags = {
-    Name = "consul-kms-unseal-${random_pet.env.id}"
-  }
-}
-
 data "aws_ami" "ubuntu" {
   most_recent = "true"
   owners      = ["099720109477"]

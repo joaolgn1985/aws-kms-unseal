@@ -7,15 +7,6 @@ resource "aws_kms_key" "vault" {
   }
 }
 
-resource "aws_kms_key" "consul" {
-  description             = "Consul unseal key"
-  deletion_window_in_days = 10
-
-  tags = {
-    Name = "consul-kms-unseal-${random_pet.env.id}"
-  }
-}
-
 data "aws_ami" "ubuntu" {
   most_recent = "true"
   owners      = ["099720109477"]
@@ -63,39 +54,6 @@ data "template_file" "vault" {
   }
 }
 
-resource "aws_security_group" "vault" {
-  name = "vault-kms-unseal-${random_pet.env.id}"
-  description = "vault access"
-  vpc_id = aws_vpc.vpc.id
-
-  tags = {
-    Name = "vault-kms-unseal-${random_pet.env.id}"
-  }
-
-  # SSH
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Vault Client Traffic
-  ingress {
-    from_port = 8200
-    to_port = 8200
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 resource "aws_instance" "consul" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
@@ -128,38 +86,6 @@ data "template_file" "consul" {
   }
 }
 
-resource "aws_security_group" "consul" {
-  name = "consul-kms-unseal-${random_pet.env.id}"
-  description = "consul access"
-  vpc_id = aws_vpc.vpc.id
-
-  tags = {
-    Name = "consul-kms-unseal-${random_pet.env.id}"
-  }
-
-  # SSH
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Consul Client Traffic
-  ingress {
-    from_port = 8500
-    to_port = 8500
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
 
 data "template_file" "format_ssh" {
   template = "connect to host with following command: ssh ubuntu@$${admin} -i private.key"
@@ -176,12 +102,42 @@ Connect to Vault via SSH   ssh ubuntu@${aws_instance.vault[0].public_ip} -i priv
 Vault web interface  http://${aws_instance.vault[0].public_ip}:8200/ui
 VAULT
 
-}
-
-output "connections" {
   value = <<CONSUL
 Connect to Consul via SSH   ssh ubuntu@${aws_instance.consul[0].public_ip} -i private.key
 Consul web interface  http://${aws_instance.vault[0].public_ip}:8500/ui
 CONSUL
 
+}
+
+resource "aws_security_group" "vault" {
+  name = "vault-kms-unseal-${random_pet.env.id}"
+  description = "vault access"
+  vpc_id = aws_vpc.vpc.id
+
+  tags = {
+    Name = "vault-kms-unseal-${random_pet.env.id}"
+  }
+
+  # SSH
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Vault Client Traffic
+  ingress {
+    from_port = 8200
+    to_port = 8200
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
