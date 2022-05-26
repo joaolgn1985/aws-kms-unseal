@@ -66,7 +66,10 @@ logger "User setup complete"
 
 CONSUL_ZIP="consul.zip"
 CONSUL_URL="${consul_url}"
-CONSUL_SERVER="${consul_server}"
+CONSUL_SERVER1="${consul_server1}"
+CONSUL_SERVER2="${consul_server2}"
+CONSUL_SERVER3="${consul_server3}"
+VAULT_SERVER="${vault_server}
 
 curl --silent --output /tmp/$${CONSUL_ZIP} $${CONSUL_URL}
 unzip -o /tmp/$${CONSUL_ZIP} -d /usr/local/bin/
@@ -103,9 +106,9 @@ cat << EOF > /etc/consul.d/consul.json
 "node_name": "vault-server",
 "datacenter": "dc1",
 "data_dir": "/var/lib/consul/data",
-"bind_addr": "${vault_server}",
+"bind_addr": $${CONSUL_SERVER},
 "client_addr": "127.0.0.1",
-"retry_join": ["${consul_server1}","${consul_server2}", "${consul_server3}"],
+"retry_join": [$${CONSUL_SERVER1},$${CONSUL_SERVER2}, $${CONSUL_SERVER3}],
 "log_level": "DEBUG",
 "enable_syslog": true
 EOF

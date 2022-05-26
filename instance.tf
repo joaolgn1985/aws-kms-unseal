@@ -182,7 +182,26 @@ data "template_file" "format_ssh" {
 
   vars = {
     admin = aws_instance.vault[0].public_ip
-    admin = aws_instance.consul[0].public_ip
+  }
+}
+
+data "template_file" "vault" {
+  template = file("vault-userdata.tpl")
+
+  vars = {
+    kms_key    = aws_kms_key.vault.id
+    vault_url  = var.vault_url
+    aws_region = var.aws_region
+  }
+}
+
+data "template_file" "consul" {
+  template = file("update-consul-userdata.tpl")
+
+  vars = {
+    kms_key    = aws_kms_key.vault.id
+    consul_url  = var.consul_url
+    aws_region = var.aws_region
   }
 }
 

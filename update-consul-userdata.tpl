@@ -3,10 +3,10 @@
 apt-get install -y unzip
 # apt-get install -y libtool libltdl-dev 
 
-USER="vault"
-COMMENT="Hashicorp vault user"
-GROUP="vault"
-HOME="/srv/vault"
+USER="consul"
+COMMENT="Hashicorp consul user"
+GROUP="consul"
+HOME="/srv/consul"
 
 # Detect package management system.
 YUM=$(which yum 2>/dev/null)
@@ -64,69 +64,65 @@ logger "User setup complete"
 
 
 
-VAULT_ZIP="vault.zip"
-VAULT_URL="${vault_url}"
-curl --silent --output /tmp/$${VAULT_ZIP} $${VAULT_URL}
-unzip -o /tmp/$${VAULT_ZIP} -d /usr/local/bin/
-chmod 0755 /usr/local/bin/vault
-chown vault:vault /usr/local/bin/vault
-mkdir -pm 0755 /etc/vault.d
-mkdir -pm 0755 /opt/vault
-chown vault:vault /opt/vault
+CONSUL_ZIP="consul.zip"
+CONSUL_URL="${consul_url}"
+CONSUL_SERVER1="${consul_server1}"
+CONSUL_SERVER2="${consul_server2}"
+CONSUL_SERVER3="${consul_server3}"
+VAULT_SERVER="${vault_server}
+
+curl --silent --output /tmp/$${CONSUL_ZIP} $${CONSUL_URL}
+unzip -o /tmp/$${CONSUL_ZIP} -d /usr/local/bin/
+chmod 0755 /usr/local/bin/consul
+chown consul:consul /usr/local/bin/consul
+mkdir -pm 0755 /etc/consul.d
+mkdir -pm 0755 /opt/consul
+chown consul:consul /opt/consul
 
 
-cat << EOF > /lib/systemd/system/vault.service
+cat << EOF > /lib/systemd/system/consul.service
 [Unit]
-Description=Vault Agent
+Description=consul Agent
 Requires=network-online.target
 After=network-online.target
 [Service]
 Restart=on-failure
 PermissionsStartOnly=true
-ExecStartPre=/sbin/setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault
-ExecStart=/usr/local/bin/vault server -config /etc/vault.d
+ExecStartPre=/sbin/setcap 'cap_ipc_lock=+ep' /usr/local/bin/consul
+ExecStart=/usr/local/bin/consul server -config /etc/consul.d
 ExecReload=/bin/kill -HUP $MAINPID
 KillSignal=SIGTERM
-User=vault
-Group=vault
+User=consul
+Group=consul
+Restart=on-failure
+RestartSec=42s
 [Install]
 WantedBy=multi-user.target
 EOF
 
 
-cat << EOF > /etc/vault.d/vault.hcl
-storage "consul" {
-  address = "127.0.0.1:8500"
-  path    = "vault/"
-}
-listener "tcp" {
-  address         = "0.0.0.0:8200"
-  tls_disable     = 1
-}
-seal "awskms" {
-  region     = "${aws_region}"
-  kms_key_id = "${kms_key}"
-}
-ui=true
-api_addr                = "http://0.0.0.0:8200"
-cluster_name            = "Vault Server"
-disable_mlock           = true
-disable_cache           = true
-max_lease_ttl           = "12h"
-default_lease_ttl       = "6h"
-pid_file                = "/var/lib/vault/vault.pid"
+cat << EOF > /etc/consul.d/consul.json
+"server": false,
+"node_name": "vault-server",
+"datacenter": "dc1",
+"data_dir": "/var/lib/consul/data",
+"bind_addr": $${VAULT_SERVER},
+"client_addr": "127.0.0.1",
+"retry_join": [$${CONSUL_SERVER1},$${CONSUL_SERVER2}, $${CONSUL_SERVER3}],
+"log_level": "DEBUG",
+"enable_syslog": true
 EOF
 
 
-sudo chmod 0664 /lib/systemd/system/vault.service
+sudo chmod 0664 /lib/systemd/system/consul.service
 systemctl daemon-reload
-sudo chown -R vault:vault /etc/vault.d
-sudo chmod -R 0644 /etc/vault.d/*
+sudo chown -R consul:consul /etc/consul.d
+sudo chmod -R 0644 /etc/consul.d/*
 
-cat << EOF > /etc/profile.d/vault.sh
-export VAULT_ADDR=http://127.0.0.1:8200
-export VAULT_SKIP_VERIFY=true
+cat << EOF > /etc/profile.d/consul.sh
+export CONSUL_ADDR=http://127.0.0.1:8500
+export CONSUL_SKIP_VERIFY=true
 EOF
 
-systemctl enable vault
-systemctl start vault
+systemctl enable consul
+systemctl start consul

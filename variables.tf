@@ -21,17 +21,17 @@ variable "consul_url" {
 }
 
 variable "consul_server1" {
-  default = aws_instance.consul[0].public_ip
+  default = ""
 }
 
 variable "consul_server2" {
-  default = aws_instance.consul[1].public_ip
+  default = ""
 }
 
 variable "consul_server3" {
-  default = aws_instance.consul[2].public_ip
+  default = ""
 }
 
 variable "vault_server" {
-  default = aws_instance.vault[0].private_ip
+  default = ""
 }

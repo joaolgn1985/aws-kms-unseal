@@ -66,6 +66,8 @@ logger "User setup complete"
 
 VAULT_ZIP="vault.zip"
 VAULT_URL="${vault_url}"
+CONSUL_SERVER="${consul_server}"
+VAULT_SERVER="${vault_server}"
 curl --silent --output /tmp/$${VAULT_ZIP} $${VAULT_URL}
 unzip -o /tmp/$${VAULT_ZIP} -d /usr/local/bin/
 chmod 0755 /usr/local/bin/vault
@@ -101,6 +103,7 @@ storage "consul" {
 }
 listener "tcp" {
   address         = "0.0.0.0:8200"
+  cluster_address = "$${CONSUL_SERVER}:8201"
   tls_disable     = 1
 }
 seal "awskms" {
@@ -109,6 +112,7 @@ seal "awskms" {
 }
 ui=true
 api_addr                = "http://0.0.0.0:8200"
+cluster_addr            = "$${VAULT_SERVER}:8201"
 cluster_name            = "Vault Server"
 disable_mlock           = true
 disable_cache           = true

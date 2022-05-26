@@ -1,5 +1,9 @@
 #------------------------------------------------
 # Modify the region to use different AWS region
 #------------------------------------------------
-aws_region = "us-east-1"
-aws_zone = "us-east-1d"
+aws_region      = "us-east-1"
+aws_zone        = "us-east-1d"
+vault_server    = output.instance_ip_vault
+consul_server1  = output.instance_ip_consul_1
+consul_server2  = output.instance_ip_consul_2
+consul_server3  = output.instance_ip_consul_3
